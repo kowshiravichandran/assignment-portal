@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assignment Portal – Teacher</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0e0e1a; color: #fff; display: flex; height: 100vh; overflow: hidden; }
+
+  .sidebar {
+    width: 260px; background: rgba(255,255,255,0.04); border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex; flex-direction: column; padding: 25px 0; flex-shrink: 0;
+  }
+  .sidebar-logo { padding: 0 20px 25px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-logo .icon { font-size: 30px; }
+  .sidebar-logo h2 { color: #fff; font-size: 16px; font-weight: 700; margin-top: 8px; }
+  .sidebar-logo p { color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 3px; }
+  .nav { padding: 20px 12px; flex: 1; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 10px; cursor: pointer;
+    color: rgba(255,255,255,0.55); font-size: 14px; font-weight: 500;
+    transition: all 0.2s; margin-bottom: 4px;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  .nav-item.active { background: linear-gradient(135deg, rgba(240,180,80,0.2), rgba(200,140,30,0.15)); color: #f5c842; border: 1px solid rgba(240,180,80,0.3); }
+  .nav-item .icon { font-size: 18px; }
+  .sidebar-footer { padding: 15px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .user-info { display: flex; align-items: center; gap: 10px; padding: 10px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f5c842, #e09c1a); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .user-info .name { color: #fff; font-size: 13px; font-weight: 600; }
+  .user-info .role { color: rgba(255,255,255,0.4); font-size: 11px; }
+  .logout-btn { width: 100%; padding: 10px; background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.2); border-radius: 8px; color: #ff8080; cursor: pointer; font-size: 13px; margin-top: 8px; transition: background 0.2s; }
+  .logout-btn:hover { background: rgba(255,80,80,0.2); }
+
+  .main { flex: 1; overflow-y: auto; padding: 30px; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 26px; font-weight: 700; }
+  .page-header p { color: rgba(255,255,255,0.5); margin-top: 6px; font-size: 14px; }
+
+  .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+  .card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: #f5c842; }
+
+  .form-group { margin-bottom: 16px; }
+  label { display: block; color: rgba(255,255,255,0.65); font-size: 13px; margin-bottom: 7px; font-weight: 500; }
+  input[type=text], input[type=number], input[type=date], select, textarea {
+    width: 100%; padding: 11px 14px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; color: #fff; font-size: 14px; outline: none;
+    transition: border-color 0.3s; font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #f5c842; }
+  input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.3); }
+  select option { background: #1a1a2e; }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn-primary {
+    padding: 11px 24px; background: linear-gradient(135deg, #f5c842, #e09c1a);
+    border: none; border-radius: 10px; color: #000; font-size: 14px;
+    font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(245,200,66,0.3); }
+  .btn-sm {
+    padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+  }
+  .btn-grade { background: rgba(124,109,250,0.2); color: #a89af8; border: 1px solid rgba(124,109,250,0.35); }
+  .btn-grade:hover { background: rgba(124,109,250,0.35); }
+  .btn-delete { background: rgba(255,80,80,0.15); color: #ff8080; border: 1px solid rgba(255,80,80,0.3); }
+  .btn-delete:hover { background: rgba(255,80,80,0.3); }
+  .btn-save { background: rgba(80,220,120,0.15); color: #50dc78; border: 1px solid rgba(80,220,120,0.3); }
+  .btn-save:hover { background: rgba(80,220,120,0.3); }
+
+  .filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-btn { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); transition: all 0.2s; }
+  .filter-btn.active { background: rgba(245,200,66,0.15); color: #f5c842; border-color: rgba(245,200,66,0.4); }
+
+  .submission-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 14px; }
+  .sub-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+  .sub-title { font-size: 15px; font-weight: 600; }
+  .sub-meta { color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 4px; }
+  .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge.pending { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
+  .badge.graded { background: rgba(80,220,120,0.15); color: #50dc78; border: 1px solid rgba(80,220,120,0.3); }
+  .grade-form { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); display: none; }
+  .grade-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .grade-row .form-group { margin-bottom: 0; flex: 1; min-width: 100px; }
+  .pdf-link { display: inline-flex; align-items: center; gap: 6px; color: #7c6dfa; text-decoration: none; font-size: 13px; margin-top: 10px; }
+  .pdf-link:hover { text-decoration: underline; }
+
+  /* STUDENT HISTORY */
+  .student-row { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+  .student-row-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; cursor: pointer; transition: background 0.2s; }
+  .student-row-header:hover { background: rgba(255,255,255,0.04); }
+  .student-subs { display: none; padding: 0 20px 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .student-subs.open { display: block; }
+  .mini-sub { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; }
+  .mini-sub:last-child { border-bottom: none; }
+
+  /* ASSIGN FUTURE */
+  .assignment-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .assignment-item .info { flex: 1; }
+  .assignment-item .info h4 { font-size: 15px; font-weight: 600; }
+  .assignment-item .info p { color: rgba(255,255,255,0.45); font-size: 13px; margin-top: 3px; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); }
+  .empty-state .icon { font-size: 50px; display: block; margin-bottom: 12px; }
+
+  .toast { position: fixed; top: 25px; right: 25px; z-index: 9999; padding: 14px 22px; border-radius: 12px; font-size: 14px; display: none; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px; text-align: center; }
+  .stat-card .num { font-size: 26px; font-weight: 800; color: #f5c842; }
+  .stat-card .lbl { color: rgba(255,255,255,0.45); font-size: 12px; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="icon">🏫</div>
+    <h2>Assignment Portal</h2>
+    <p>Teacher Dashboard</p>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="showPage('grade')"><span class="icon">✏️</span> Grade Submissions</div>
+    <div class="nav-item" onclick="showPage('students')"><span class="icon">📋</span> Student History</div>
+    <div class="nav-item" onclick="showPage('assign')"><span class="icon">📅</span> Assign Future Work</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar">👩‍🏫</div>
+      <div>
+        <div class="name" id="teacherName">Teacher</div>
+        <div class="role">Teacher</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- GRADE SUBMISSIONS -->
+  <div class="page active" id="page-grade">
+    <div class="page-header">
+      <h1>✏️ Grade Submissions</h1>
+      <p>Review and grade student assignments</p>
+    </div>
+    <div class="stats-grid" id="gradeStats"></div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterSubs('all', this)">All</button>
+      <button class="filter-btn" onclick="filterSubs('pending', this)">⏳ Pending</button>
+      <button class="filter-btn" onclick="filterSubs('graded', this)">✅ Graded</button>
+    </div>
+    <div id="gradeList"></div>
+  </div>
+
+  <!-- STUDENT HISTORY -->
+  <div class="page" id="page-students">
+    <div class="page-header">
+      <h1>📋 Student History</h1>
+      <p>Click a student to expand their submission history</p>
+    </div>
+    <div id="studentList"></div>
+  </div>
+
+  <!-- ASSIGN FUTURE WORK -->
+  <div class="page" id="page-assign">
+    <div class="page-header">
+      <h1>📅 Assign Future Work</h1>
+      <p>Create and manage upcoming assignments for students</p>
+    </div>
+    <div class="card">
+      <h3>➕ Create New Assignment</h3>
+      <div class="form-group">
+        <label>Assignment Title *</label>
+        <input type="text" id="asgn-title" placeholder="e.g. Chapter 7 Review" />
+      </div>
+      <div class="form-group">
+        <label>Subject *</label>
+        <input type="text" id="asgn-subject" placeholder="e.g. Mathematics" />
+      </div>
+      <div class="form-group">
+        <label>Description (optional)</label>
+        <textarea id="asgn-desc" placeholder="Describe what students need to do..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Due Date *</label>
+        <input type="date" id="asgn-due" />
+      </div>
+      <div class="form-group">
+        <label>Assign To</label>
+        <select id="asgn-to">
+          <option value="all">All Students</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="createAssignment()">📌 Create Assignment</button>
+    </div>
+
+    <h3 style="margin-bottom:14px;color:#f5c842;">📋 Active Assignments</h3>
+    <div id="assignList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allSubmissions = [];
+let currentFilter = 'all';
+
+async function init() {
+  const res = await fetch('/api/me');
+  const data = await res.json();
+  if (!data.success || data.user.role !== 'teacher') { window.location.href = '/'; return; }
+  document.getElementById('teacherName').textContent = data.user.fullName;
+  loadGradeSubmissions();
+  loadStudentDropdown();
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'grade') loadGradeSubmissions();
+  if (name === 'students') loadStudentHistory();
+  if (name === 'assign') { loadAssignments(); loadStudentDropdown(); }
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  if (isError) { t.style.background = 'rgba(255,80,80,0.15)'; t.style.borderColor = 'rgba(255,80,80,0.3)'; t.style.color = '#ff8080'; t.style.border = '1px solid'; }
+  else { t.style.background = 'rgba(80,255,150,0.15)'; t.style.borderColor = 'rgba(80,255,150,0.35)'; t.style.color = '#80ffb0'; t.style.border = '1px solid'; }
+  setTimeout(() => t.style.display = 'none', 3500);
+}
+
+async function loadGradeSubmissions() {
+  const res = await fetch('/api/all-submissions');
+  allSubmissions = await res.json();
+  const total = allSubmissions.length;
+  const graded = allSubmissions.filter(s => s.status === 'graded').length;
+  const pending = total - graded;
+  document.getElementById('gradeStats').innerHTML = `
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">Total Submissions</div></div>
+    <div class="stat-card"><div class="num">${pending}</div><div class="lbl">Pending</div></div>
+    <div class="stat-card"><div class="num">${graded}</div><div class="lbl">Graded</div></div>`;
+  renderSubmissions(currentFilter);
+}
+
+function filterSubs(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSubmissions(f);
+}
+
+function renderSubmissions(filter) {
+  const list = filter === 'all' ? allSubmissions : allSubmissions.filter(s => s.status === filter);
+  const el = document.getElementById('gradeList');
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><span class="icon">📭</span><p>No submissions found</p></div>'; return; }
+  el.innerHTML = list.map(s => `
+    <div class="submission-card" id="card-${s._id}">
+      <div class="sub-header">
+        <div>
+          <div class="sub-title">${s.title}</div>
+          <div class="sub-meta">👤 ${s.studentName} (${s.studentUsername}) &nbsp;|&nbsp; 📚 ${s.subject} &nbsp;|&nbsp; 🕐 ${new Date(s.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+          ${s.textAnswer ? `<div style="margin-top:8px;color:rgba(255,255,255,0.55);font-size:13px;">${s.textAnswer.substring(0,150)}${s.textAnswer.length>150?'...':''}</div>` : ''}
+          ${s.pdfFile ? `<a class="pdf-link" href="/uploads/${s.pdfFile}" target="_blank">📄 View PDF</a>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <span class="badge ${s.status}">${s.status === 'graded' ? '✅ Graded' : '⏳ Pending'}</span>
+          <button class="btn-sm btn-grade" onclick="toggleGradeForm('${s._id}')">${s.status === 'graded' ? '✏️ Edit' : '✏️ Grade'}</button>
+        </div>
+      </div>
+      ${s.status === 'graded' ? `<div style="margin-top:10px;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:13px;">
+        <strong style="color:#f5c842;">Marks:</strong> ${s.marks}/${s.maxMarks} &nbsp;|&nbsp; <strong style="color:#f5c842;">Feedback:</strong> ${s.feedback || 'None'}
+      </div>` : ''}
+      <div class="grade-form" id="form-${s._id}">
+        <div class="grade-row">
+          <div class="form-group"><label>Marks</label><input type="number" id="marks-${s._id}" value="${s.marks||''}" placeholder="Score" min="0" max="100"/></div>
+          <div class="form-group"><label>Out of</label><input type="number" id="max-${s._id}" value="${s.maxMarks||100}" placeholder="100" min="1"/></div>
+          <div class="form-group" style="flex:2"><label>Feedback</label><input type="text" id="fb-${s._id}" value="${s.feedback||''}" placeholder="Write feedback..." /></div>
+          <button class="btn-sm btn-save" onclick="gradeSubmission('${s._id}')">💾 Save</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleGradeForm(id) {
+  const form = document.getElementById('form-' + id);
+  form.style.display = form.style.display === 'block' ? 'none' : 'block';
+}
+
+async function gradeSubmission(id) {
+  const marks = document.getElementById('marks-' + id).value;
+  const maxMarks = document.getElementById('max-' + id).value;
+  const feedback = document.getElementById('fb-' + id).value;
+  if (!marks) { showToast('Please enter marks', true); return; }
+  const res = await fetch('/api/grade/' + id, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ marks, maxMarks: maxMarks || 100, feedback })
+  });
+  const data = await res.json();
+  if (data.success) { showToast('✅ Marks saved!'); loadGradeSubmissions(); }
+  else showToast(data.message, true);
+}
+
+async function loadStudentHistory() {
+  const [subsRes, studRes] = await Promise.all([fetch('/api/all-submissions'), fetch('/api/students')]);
+  const subs = await subsRes.json();
+  const students = await studRes.json();
+  const el = document.getElementById('studentList');
+  if (!students.length) { el.innerHTML = '<div class="empty-state"><span class="icon">👥</span><p>No students registered yet</p></div>'; return; }
+  el.innerHTML = students.map(st => {
+    const mySubs = subs.filter(s => s.studentUsername === st.username);
+    const graded = mySubs.filter(s => s.status === 'graded');
+    const avg = graded.length ? Math.round(graded.reduce((a, s) => a + (s.marks / s.maxMarks * 100), 0) / graded.length) : null;
+    return `<div class="student-row">
+      <div class="student-row-header" onclick="toggleStudent('${st.username}')">
+        <div>
+          <strong>${st.fullName}</strong>
+          <span style="color:rgba(255,255,255,0.4);font-size:13px;margin-left:10px;">${st.username}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span style="color:rgba(255,255,255,0.45);font-size:13px;">${mySubs.length} submissions${avg !== null ? ' · Avg: <strong style="color:#f5c842">' + avg + '%</strong>' : ''}</span>
+          <span>▼</span>
+        </div>
+      </div>
+      <div class="student-subs" id="studs-${st.username}">
+        ${!mySubs.length ? '<div style="padding:12px 0;color:rgba(255,255,255,0.3);font-size:13px;">No submissions yet</div>' :
+          mySubs.map(s => `<div class="mini-sub">
+            <div>
+              <div style="font-size:14px;font-weight:600;">${s.title}</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.4);">📚 ${s.subject} · ${new Date(s.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              ${s.pdfFile ? `<a class="pdf-link" href="/uploads/${s.pdfFile}" target="_blank" style="font-size:12px;">📄 PDF</a>` : ''}
+              <span class="badge ${s.status}" style="font-size:11px;">${s.status === 'graded' ? s.marks + '/' + s.maxMarks : '⏳ Pending'}</span>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleStudent(username) {
+  const el = document.getElementById('studs-' + username);
+  el.classList.toggle('open');
+}
+
+async function loadStudentDropdown() {
+  const res = await fetch('/api/students');
+  const students = await res.json();
+  const sel = document.getElementById('asgn-to');
+  if (!sel) return;
+  const extras = students.map(s => `<option value="${s.username}">${s.fullName} (${s.username})</option>`).join('');
+  sel.innerHTML = '<option value="all">All Students</option>' + extras;
+}
+
+async function loadAssignments() {
+  const res = await fetch('/api/assignments');
+  const assignments = await res.json();
+  const el = document.getElementById('assignList');
+  if (!assignments.length) { el.innerHTML = '<div class="empty-state"><span class="icon">📅</span><p>No assignments created yet</p></div>'; return; }
+  el.innerHTML = assignments.map(a => {
+    const due = new Date(a.dueDate);
+    return `<div class="assignment-item">
+      <div class="info">
+        <h4>${a.title}</h4>
+        <p>📚 ${a.subject} &nbsp;|&nbsp; 📅 Due: ${due.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})} &nbsp;|&nbsp; 👥 ${a.assignedTo === 'all' ? 'All Students' : a.assignedTo}</p>
+        ${a.description ? `<p style="margin-top:5px;color:rgba(255,255,255,0.4);">${a.description}</p>` : ''}
+      </div>
+      <button class="btn-sm btn-delete" onclick="deleteAssignment('${a._id}')">🗑️ Delete</button>
+    </div>`;
+  }).join('');
+}
+
+async function createAssignment() {
+  const title = document.getElementById('asgn-title').value.trim();
+  const subject = document.getElementById('asgn-subject').value.trim();
+  const description = document.getElementById('asgn-desc').value.trim();
+  const dueDate = document.getElementById('asgn-due').value;
+  const assignedTo = document.getElementById('asgn-to').value;
+  if (!title || !subject || !dueDate) { showToast('Title, subject and due date are required!', true); return; }
+  const res = await fetch('/api/assignments', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, subject, description, dueDate, assignedTo })
+  });
+  const data = await res.json();
+  if (data.success) {
+    showToast('✅ Assignment created!');
+    document.getElementById('asgn-title').value = '';
+    document.getElementById('asgn-subject').value = '';
+    document.getElementById('asgn-desc').value = '';
+    document.getElementById('asgn-due').value = '';
+    loadAssignments();
+  } else showToast(data.message, true);
+}
+
+async function deleteAssignment(id) {
+  if (!confirm('Delete this assignment?')) return;
+  const res = await fetch('/api/assignments/' + id, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.success) { showToast('🗑️ Deleted!'); loadAssignments(); }
+}
+
+async function logout() {
+  await fetch('/api/logout', { method: 'POST' });
+  window.location.href = '/';
+}
+
+init();
+</script>
+</body>
+</html>

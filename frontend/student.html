@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assignment Portal – Student</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0e0e1a; color: #fff; display: flex; height: 100vh; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 250px; background: rgba(255,255,255,0.04); border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex; flex-direction: column; padding: 25px 0; flex-shrink: 0;
+  }
+  .sidebar-logo { padding: 0 20px 25px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-logo .icon { font-size: 30px; }
+  .sidebar-logo h2 { color: #fff; font-size: 16px; font-weight: 700; margin-top: 8px; }
+  .sidebar-logo p { color: rgba(255,255,255,0.4); font-size: 12px; margin-top: 3px; }
+  .nav { padding: 20px 12px; flex: 1; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 10px; cursor: pointer;
+    color: rgba(255,255,255,0.55); font-size: 14px; font-weight: 500;
+    transition: all 0.2s; margin-bottom: 4px;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  .nav-item.active { background: linear-gradient(135deg, rgba(124,109,250,0.3), rgba(90,79,219,0.2)); color: #a89af8; border: 1px solid rgba(124,109,250,0.3); }
+  .nav-item .icon { font-size: 18px; }
+  .sidebar-footer { padding: 15px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .user-info { display: flex; align-items: center; gap: 10px; padding: 10px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #7c6dfa, #5a4fdb); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .user-info .name { color: #fff; font-size: 13px; font-weight: 600; }
+  .user-info .role { color: rgba(255,255,255,0.4); font-size: 11px; }
+  .logout-btn { width: 100%; padding: 10px; background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.2); border-radius: 8px; color: #ff8080; cursor: pointer; font-size: 13px; margin-top: 8px; transition: background 0.2s; }
+  .logout-btn:hover { background: rgba(255,80,80,0.2); }
+
+  /* MAIN */
+  .main { flex: 1; overflow-y: auto; padding: 30px; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 26px; font-weight: 700; }
+  .page-header p { color: rgba(255,255,255,0.5); margin-top: 6px; font-size: 14px; }
+
+  /* CARDS */
+  .card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 24px; margin-bottom: 20px;
+  }
+  .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #a89af8; }
+
+  /* FORM */
+  .form-group { margin-bottom: 18px; }
+  label { display: block; color: rgba(255,255,255,0.65); font-size: 13px; margin-bottom: 7px; font-weight: 500; }
+  input[type=text], input[type=file], select, textarea {
+    width: 100%; padding: 12px 14px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; color: #fff; font-size: 14px; outline: none;
+    transition: border-color 0.3s; font-family: inherit;
+  }
+  input[type=text]:focus, textarea:focus, select:focus { border-color: #7c6dfa; }
+  input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.3); }
+  textarea { resize: vertical; min-height: 120px; }
+  select option { background: #1a1a2e; }
+  .btn-primary {
+    padding: 12px 28px; background: linear-gradient(135deg, #7c6dfa, #5a4fdb);
+    border: none; border-radius: 10px; color: #fff; font-size: 15px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(124,109,250,0.35); }
+  .toast {
+    position: fixed; top: 25px; right: 25px; z-index: 9999;
+    padding: 14px 22px; border-radius: 12px; font-size: 14px;
+    background: rgba(80,255,150,0.15); border: 1px solid rgba(80,255,150,0.35); color: #80ffb0;
+    display: none; animation: fadeIn 0.3s;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HISTORY / MARKS */
+  .submission-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 20px; margin-bottom: 14px;
+  }
+  .sub-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+  .sub-title { font-size: 16px; font-weight: 600; }
+  .sub-meta { color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 5px; }
+  .badge {
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  }
+  .badge.pending { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
+  .badge.graded { background: rgba(80,220,120,0.15); color: #50dc78; border: 1px solid rgba(80,220,120,0.3); }
+  .marks-big { font-size: 32px; font-weight: 800; color: #a89af8; }
+  .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #7c6dfa, #a89af8); transition: width 0.8s; }
+  .feedback-box { background: rgba(255,255,255,0.04); border-left: 3px solid #7c6dfa; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 12px; font-size: 14px; color: rgba(255,255,255,0.7); }
+  .pdf-link { display: inline-flex; align-items: center; gap: 6px; color: #7c6dfa; text-decoration: none; font-size: 13px; margin-top: 10px; }
+  .pdf-link:hover { text-decoration: underline; }
+  .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); }
+  .empty-state .icon { font-size: 50px; display: block; margin-bottom: 12px; }
+
+  /* UPCOMING ASSIGNMENTS */
+  .assignment-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 20px; margin-bottom: 14px;
+    border-left: 4px solid #7c6dfa;
+  }
+  .due-badge {
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  }
+  .due-soon { background: rgba(255,80,80,0.15); color: #ff8080; border: 1px solid rgba(255,80,80,0.3); }
+  .due-ok { background: rgba(80,200,255,0.15); color: #80c8ff; border: 1px solid rgba(80,200,255,0.3); }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; text-align: center; }
+  .stat-card .num { font-size: 28px; font-weight: 800; color: #a89af8; }
+  .stat-card .lbl { color: rgba(255,255,255,0.45); font-size: 13px; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="icon">📚</div>
+    <h2>Assignment Portal</h2>
+    <p>Student Dashboard</p>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="showPage('submit')"><span class="icon">✏️</span> Submit Assignment</div>
+    <div class="nav-item" onclick="showPage('history')"><span class="icon">📋</span> Submission History</div>
+    <div class="nav-item" onclick="showPage('marks')"><span class="icon">🏆</span> My Marks</div>
+    <div class="nav-item" onclick="showPage('upcoming')"><span class="icon">📅</span> Upcoming Assignments</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="avatar">🎓</div>
+      <div>
+        <div class="name" id="userName">Student</div>
+        <div class="role">Student</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- SUBMIT PAGE -->
+  <div class="page active" id="page-submit">
+    <div class="page-header">
+      <h1>✏️ Submit Assignment</h1>
+      <p>Upload your completed assignment as a PDF or type your answer below</p>
+    </div>
+    <div class="card">
+      <div class="form-group">
+        <label>Subject *</label>
+        <input type="text" id="sub-subject" placeholder="e.g. Mathematics, Science, English" />
+      </div>
+      <div class="form-group">
+        <label>Assignment Title *</label>
+        <input type="text" id="sub-title" placeholder="e.g. Chapter 5 Exercise" />
+      </div>
+      <div class="form-group">
+        <label>📄 Upload PDF (optional, max 10MB)</label>
+        <input type="file" id="sub-pdf" accept=".pdf" />
+      </div>
+      <div class="form-group">
+        <label>Text Answer (optional)</label>
+        <textarea id="sub-text" placeholder="Type your answer here if not uploading PDF..."></textarea>
+      </div>
+      <button class="btn-primary" onclick="submitAssignment()">📤 Submit Assignment</button>
+    </div>
+  </div>
+
+  <!-- HISTORY PAGE -->
+  <div class="page" id="page-history">
+    <div class="page-header">
+      <h1>📋 Submission History</h1>
+      <p>All your past assignment submissions</p>
+    </div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- MARKS PAGE -->
+  <div class="page" id="page-marks">
+    <div class="page-header">
+      <h1>🏆 My Marks</h1>
+      <p>Your grades and performance overview</p>
+    </div>
+    <div class="stats-grid" id="marksStats"></div>
+    <div id="marksList"></div>
+  </div>
+
+  <!-- UPCOMING PAGE -->
+  <div class="page" id="page-upcoming">
+    <div class="page-header">
+      <h1>📅 Upcoming Assignments</h1>
+      <p>Assignments assigned to you by your teacher</p>
+    </div>
+    <div id="upcomingList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentUser = null;
+
+async function init() {
+  const res = await fetch('/api/me');
+  const data = await res.json();
+  if (!data.success || data.user.role !== 'student') { window.location.href = '/'; return; }
+  currentUser = data.user;
+  document.getElementById('userName').textContent = data.user.fullName;
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'history') loadHistory();
+  if (name === 'marks') loadMarks();
+  if (name === 'upcoming') loadUpcoming();
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  if (isError) { t.style.background = 'rgba(255,80,80,0.15)'; t.style.borderColor = 'rgba(255,80,80,0.3)'; t.style.color = '#ff8080'; }
+  else { t.style.background = 'rgba(80,255,150,0.15)'; t.style.borderColor = 'rgba(80,255,150,0.35)'; t.style.color = '#80ffb0'; }
+  setTimeout(() => t.style.display = 'none', 3500);
+}
+
+async function submitAssignment() {
+  const subject = document.getElementById('sub-subject').value.trim();
+  const title = document.getElementById('sub-title').value.trim();
+  const text = document.getElementById('sub-text').value.trim();
+  const pdf = document.getElementById('sub-pdf').files[0];
+  if (!subject || !title) { showToast('Subject and Title are required!', true); return; }
+  const fd = new FormData();
+  fd.append('subject', subject); fd.append('title', title); fd.append('textAnswer', text);
+  if (pdf) fd.append('pdfFile', pdf);
+  const res = await fetch('/api/submit', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (data.success) {
+    showToast('✅ Assignment submitted successfully!');
+    document.getElementById('sub-subject').value = '';
+    document.getElementById('sub-title').value = '';
+    document.getElementById('sub-text').value = '';
+    document.getElementById('sub-pdf').value = '';
+  } else showToast(data.message, true);
+}
+
+async function loadHistory() {
+  const res = await fetch('/api/my-submissions');
+  const subs = await res.json();
+  const el = document.getElementById('historyList');
+  if (!subs.length) { el.innerHTML = '<div class="empty-state"><span class="icon">📭</span><p>No submissions yet</p></div>'; return; }
+  el.innerHTML = subs.map(s => `
+    <div class="submission-card">
+      <div class="sub-header">
+        <div>
+          <div class="sub-title">${s.title}</div>
+          <div class="sub-meta">📚 ${s.subject} &nbsp;|&nbsp; 🕐 ${new Date(s.createdAt).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'})}</div>
+        </div>
+        <span class="badge ${s.status}">${s.status === 'graded' ? '✅ Graded' : '⏳ Pending'}</span>
+      </div>
+      ${s.textAnswer ? `<div style="margin-top:12px;color:rgba(255,255,255,0.6);font-size:13px;">${s.textAnswer.substring(0,120)}${s.textAnswer.length>120?'...':''}</div>` : ''}
+      ${s.pdfFile ? `<a class="pdf-link" href="/uploads/${s.pdfFile}" target="_blank">📄 View PDF</a>` : ''}
+      ${s.status === 'graded' ? `<div class="feedback-box">💬 <strong>Feedback:</strong> ${s.feedback || 'No feedback provided'}<br><strong>Marks:</strong> ${s.marks} / ${s.maxMarks}</div>` : ''}
+    </div>`).join('');
+}
+
+async function loadMarks() {
+  const res = await fetch('/api/my-submissions');
+  const subs = await res.json();
+  const graded = subs.filter(s => s.status === 'graded');
+  const avg = graded.length ? Math.round(graded.reduce((a, s) => a + (s.marks / s.maxMarks * 100), 0) / graded.length) : 0;
+  document.getElementById('marksStats').innerHTML = `
+    <div class="stat-card"><div class="num">${subs.length}</div><div class="lbl">Total Submitted</div></div>
+    <div class="stat-card"><div class="num">${graded.length}</div><div class="lbl">Graded</div></div>
+    <div class="stat-card"><div class="num">${subs.length - graded.length}</div><div class="lbl">Pending</div></div>
+    <div class="stat-card"><div class="num">${avg}%</div><div class="lbl">Average Score</div></div>`;
+  const el = document.getElementById('marksList');
+  if (!graded.length) { el.innerHTML = '<div class="empty-state"><span class="icon">🏅</span><p>No graded assignments yet</p></div>'; return; }
+  el.innerHTML = graded.map(s => {
+    const pct = Math.round(s.marks / s.maxMarks * 100);
+    return `<div class="submission-card">
+      <div class="sub-header">
+        <div><div class="sub-title">${s.title}</div><div class="sub-meta">📚 ${s.subject}</div></div>
+        <div class="marks-big">${s.marks}<span style="font-size:16px;color:rgba(255,255,255,0.4)">/${s.maxMarks}</span></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:5px;">${pct}% score</div>
+      ${s.feedback ? `<div class="feedback-box">💬 ${s.feedback}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function loadUpcoming() {
+  const res = await fetch('/api/assignments');
+  const assignments = await res.json();
+  const el = document.getElementById('upcomingList');
+  if (!assignments.length) { el.innerHTML = '<div class="empty-state"><span class="icon">📅</span><p>No upcoming assignments</p></div>'; return; }
+  const now = new Date();
+  el.innerHTML = assignments.map(a => {
+    const due = new Date(a.dueDate);
+    const daysLeft = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+    const soon = daysLeft <= 3;
+    return `<div class="assignment-card">
+      <div class="sub-header">
+        <div>
+          <div class="sub-title">${a.title}</div>
+          <div class="sub-meta">📚 ${a.subject} &nbsp;|&nbsp; 📅 Due: ${due.toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'})}</div>
+          ${a.description ? `<div style="margin-top:8px;color:rgba(255,255,255,0.55);font-size:13px;">${a.description}</div>` : ''}
+        </div>
+        <span class="due-badge ${soon ? 'due-soon' : 'due-ok'}">${daysLeft <= 0 ? '⚠️ Overdue' : daysLeft === 1 ? '🔥 Due Tomorrow' : `📅 ${daysLeft} days left`}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function logout() {
+  await fetch('/api/logout', { method: 'POST' });
+  window.location.href = '/';
+}
+
+init();
+</script>
+</body>
+</html>
